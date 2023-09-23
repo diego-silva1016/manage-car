@@ -29,8 +29,10 @@ const login = () => {
     senha: password.value
   })
     .then(result => {
+      const tokenString = `Bearer ${result.data.token}`;
       user.setUser(result.data)
-      axios.defaults.headers.common['Authorization'] = `Bearer ${result.data.token}`
+      axios.defaults.headers.common['Authorization'] = tokenString
+      localStorage.setItem('token', tokenString);
       router.push('/home')
     })
     .catch(err => {
@@ -56,6 +58,9 @@ const login = () => {
             }" v-if="loading" />
           </Button>
         </form>
+        <div>
+          <router-link to="/register">Não tem uma conta? Cadastre-se</router-link>
+        </div>
       </template>
     </Card>
     <Toast />
