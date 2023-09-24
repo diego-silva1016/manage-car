@@ -5,38 +5,40 @@ import axios from "axios"
 import Card from 'primevue/card';
 import Toast from 'primevue/toast';
 import ProgressSpinner from 'primevue/progressspinner';
-import { user } from '@/context/user.ts';
 
 import { useToast } from 'primevue/usetoast';
 
 
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from "vue-router";
 
+const name = ref('')
 const email = ref('')
 const password = ref('')
+
+const isDisabled = computed(() => {
+  return !name.value || !email.value || !password.value;
+});
 
 const loading = ref(false)
 
 const toast = useToast();
 const router = useRouter()
 
-const login = () => {
+const register = () => {
+
   loading.value = true
 
-  axios.post('https://nodejs-project-tj5s.onrender.com/user/login', {
+  axios.post('https://nodejs-project-tj5s.onrender.com/user', {
+    nome: name.value,
     email: email.value,
-    senha: password.value
+    senha: password.value,
   })
-    .then(result => {
-      const tokenString = `Bearer ${result.data.token}`;
-      user.setUser(result.data)
-      axios.defaults.headers.common['Authorization'] = tokenString
-      localStorage.setItem('user', JSON.stringify(result.data));
-      router.push('/home')
+    .then(_result => {
+      router.push('/')
     })
     .catch(err => {
-      toast.add({ severity: 'error', summary: 'Falha no login', detail: err.response.data.message, life: 3000 })
+      toast.add({ severity: 'error', summary: 'Falha na criação do usuário', detail: err.response.data.message, life: 3000 })
     })
     .finally(() => loading.value = false)
 }
@@ -45,22 +47,21 @@ const login = () => {
 
 <template>
   <main class="container">
-    <Card class="loginContainer">
+    <Card class="registerContainer">
       <template #content>
-        <form class="content" @submit.prevent="login">
-          <h2>Entrar</h2>
+        <form class="content" @submit.prevent="register">
+          <h2>Criar usuário</h2>
+          <Input :pt="{ root: { class: 'input' } }" placeholder="Nome" type="name" v-model="name" />
           <Input :pt="{ root: { class: 'input' } }" placeholder="Email" type="email" v-model="email" />
           <Input :pt="{ root: { class: 'input' } }" placeholder="Senha" type="password" v-model="password" />
-          <Button type="submit" class="btn-login">Entrar
+          <Button type="submit" class="btn-Register" :disabled="isDisabled">Criar
             <ProgressSpinner :pt="{
               root: { style: { height: '1.5rem', width: '4rem', margin: 0 } },
               circle: { style: { stroke: '#FFF', strokeWidth: 3, animation: 'none' } }
             }" v-if="loading" />
           </Button>
         </form>
-        <div>
-          <router-link to="/register">Não tem uma conta? Cadastre-se</router-link>
-        </div>
+        <router-link to="/">Voltar ao login</router-link>
       </template>
     </Card>
     <Toast />
@@ -77,7 +78,7 @@ const login = () => {
   justify-content: center;
 }
 
-.loginContainer {
+.registerContainer {
   padding: 0.5rem;
 }
 
