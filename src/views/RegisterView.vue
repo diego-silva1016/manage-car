@@ -61,6 +61,7 @@ const register = () => {
             }" v-if="loading" />
           </Button>
         </form>
+        <router-link to="/">Voltar ao login</router-link>
       </template>
     </Card>
     <Toast />
