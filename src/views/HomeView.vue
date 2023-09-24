@@ -7,8 +7,9 @@ import Input from "primevue/inputtext"
 
 import axios from "axios"
 
-import { user } from '@/context/user.ts';
+import { user, type User } from '@/context/user.ts';
 import { ref, onBeforeMount } from 'vue'
+import router from '@/router';
 
 const cars = ref([])
 const visible = ref(false)
@@ -41,6 +42,12 @@ const postNewCar = () => {
     })
 }
 
+const logout = () => {
+  user.setUser(null as unknown as User);
+  localStorage.removeItem('user');
+  router.push('/');
+}
+
 onBeforeMount(() => {
   getCars()
 })
@@ -50,8 +57,10 @@ onBeforeMount(() => {
   <div class="about">
     <header class="headerContainer">
       <h1>Gerenciamento de carros</h1>
-
-      <span>Bem vindo, <strong>{{ user.user.nome }}</strong></span>
+      <div class="userContainer">
+        <span>Bem vindo, <strong :title="user.user.nome">{{ user.user.nome }}</strong></span>
+        <Button @click="logout" severity="warning">Sair</Button>
+      </div>
     </header>
     <div class="content">
       <Button class="btn" @click="visible = true">Cadastrar carro</Button>
@@ -105,5 +114,20 @@ onBeforeMount(() => {
 .modalContent{
   display: flex;
   flex-direction: column;
+}
+
+.userContainer{
+  display: flex;
+  align-items: center;
+  width: 15%;
+  justify-content: flex-end;
+}
+
+.userContainer span{
+  max-width: 20ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 4px;
 }
 </style>

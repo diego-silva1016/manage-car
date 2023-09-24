@@ -32,7 +32,7 @@ const login = () => {
       const tokenString = `Bearer ${result.data.token}`;
       user.setUser(result.data)
       axios.defaults.headers.common['Authorization'] = tokenString
-      localStorage.setItem('token', tokenString);
+      localStorage.setItem('user', JSON.stringify(result.data));
       router.push('/home')
     })
     .catch(err => {

@@ -3,15 +3,15 @@ import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import axios from "axios"
-
-function isAuthenticated() {
-  const token = localStorage.getItem('token');
-  return token !== null;
-}
+import { user, type User } from '@/context/user.ts';
 
 function requireAuth(_to : any, _from : any, next : Function) {
-  if (isAuthenticated()) {
-    axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`;
+  const userData = localStorage.getItem('user');
+
+  if (userData) {
+    const parsedUser = JSON.parse(userData) as User;
+    user.setUser(parsedUser)
+    axios.defaults.headers.common['Authorization'] = `Bearer ${parsedUser.token}`;
     next();
   } else {
     next({ name: 'login' });
