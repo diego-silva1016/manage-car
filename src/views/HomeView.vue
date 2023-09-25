@@ -11,15 +11,28 @@ import { user, type User } from '@/context/user.ts';
 import { ref, onBeforeMount } from 'vue'
 import router from '@/router';
 
-const cars = ref([])
-const visible = ref(false)
-const newCar = ref({
+const carInitialValue = {
+  id: 0,
   placa: '',
   modelo: '',
   ano: ''
-})
+}
+
+const cars = ref([])
+
+const visible = ref(false)
+const visibleDelete = ref(false)
+const idToDelete = ref(0)
+
+const car = ref({...carInitialValue})
+
+const isEditing = ref(false)
+const loading = ref(false)
+
 
 const getCars = () => {
+  loading.value = true
+
   axios.get('https://nodejs-project-tj5s.onrender.com/car')
     .then(result => {
       cars.value = result.data
@@ -27,14 +40,39 @@ const getCars = () => {
     .catch(err => {
       console.log(err)
     })
+    .finally(() => loading.value = false)
 }
 
 const postNewCar = () => {
   axios.post('https://nodejs-project-tj5s.onrender.com/car', {
-    ...newCar.value
+    ...car.value
   })
     .then(() => {
       visible.value = false
+     getCars()
+    })
+    .catch(err => {
+      console.log(err)
+    })
+}
+
+const putCar = () => {
+  axios.put(`https://nodejs-project-tj5s.onrender.com/car/${car.value.id}`, {
+    ...car.value
+  })
+    .then(() => {
+      visible.value = false
+     getCars()
+    })
+    .catch(err => {
+      console.log(err)
+    })
+}
+
+const deleteCar = () => {
+  axios.delete(`https://nodejs-project-tj5s.onrender.com/car/${idToDelete.value}`)
+    .then(() => {
+      visibleDelete.value = false
      getCars()
     })
     .catch(err => {
@@ -66,20 +104,35 @@ onBeforeMount(() => {
       <Button class="btn" @click="visible = true">Cadastrar carro</Button>
       <DataTable :value="cars" :pt="{
         root: { style: { width: '100%' } }
-      }">
+      }" :loading="loading" lazy>
         <Column field="placa" header="Placa"></Column>
         <Column field="modelo" header="Modelo"></Column>
         <Column field="ano" header="Ano"></Column>
+        <Column header="Ações" style="width: 20%">
+          <template #body="slotProps">
+          <Button @click="isEditing = true, car = {...slotProps.data}, visible = true">Editar</Button>
+          <Button @click="idToDelete = slotProps.data.id, visibleDelete = true" class="btn-delete" severity="danger">Deletar</Button>
+        </template>
+        </Column>
       </DataTable>
     </div>
   </div>
-  <Dialog v-model:visible="visible" modal header="Cadastrar" :style="{ width: '20rem' }" :pt="{
-        content: { class: 'modalContent' }
-    }">
-    <Input :pt="{ root: { class: 'input' } }" placeholder="Placa" type="text" v-model="newCar.placa" />
-    <Input :pt="{ root: { class: 'input' } }" placeholder="Modelo" type="text" v-model="newCar.modelo" />
-    <Input :pt="{ root: { class: 'input' } }" placeholder="Ano" type="number" v-model="newCar.ano" />
-    <Button class="btn" @click="postNewCar">Cadastrar</Button>
+  
+  <Dialog v-model:visible="visible" modal :header="isEditing ? 'Editar' : 'Cadastrar'" :style="{ width: '20rem' }" :pt="{
+        content: { class: 'modalContent' } 
+    }" v-on:hide="isEditing = false, car = {...carInitialValue}">
+    <Input :pt="{ root: { class: 'input' } }" placeholder="Placa" type="text" v-model="car.placa" />
+    <Input :pt="{ root: { class: 'input' } }" placeholder="Modelo" type="text" v-model="car.modelo" />
+    <Input :pt="{ root: { class: 'input' } }" placeholder="Ano" type="number" v-model="car.ano" />
+    <Button v-if="!isEditing" class="btn" @click="postNewCar">Cadastrar</Button>
+    <Button v-if="isEditing" class="btn" @click="putCar">Editar</Button>
+  </Dialog>
+
+  <Dialog v-model:visible="visibleDelete" modal header="Deletar" :style="{ width: '20rem' }" :pt="{
+        content: { class: 'modalContent' } 
+    }" v-on:hide="visibleDelete = false, idToDelete = 0">
+    <p :style="{ marginBottom: '1rem' }">Ao confirmar, esse veículo será deletado permanentemente.</p>
+    <Button class="btn" @click="deleteCar" severity="danger">Deletar</Button>
   </Dialog>
 </template>
 
@@ -107,6 +160,11 @@ onBeforeMount(() => {
   margin-left: auto;
 }
 
+.btn-delete {
+  background-color: red;
+  margin-left: 0.5rem;
+}
+
 .input {
   margin-bottom: 0.8rem;
 }
@@ -124,7 +182,7 @@ onBeforeMount(() => {
 }
 
 .userContainer span{
-  max-width: 20ch;
+  max-width: 21ch;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
