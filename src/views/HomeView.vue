@@ -7,7 +7,7 @@ import Input from "primevue/inputtext"
 
 import axios from "axios"
 
-import { user, type User } from '@/context/user.ts';
+import { user, type User } from '@/context/user';
 import { ref, onBeforeMount } from 'vue'
 import router from '@/router';
 
@@ -117,7 +117,7 @@ onBeforeMount(() => {
       </DataTable>
     </div>
   </div>
-  
+
   <Dialog v-model:visible="visible" modal :header="isEditing ? 'Editar' : 'Cadastrar'" :style="{ width: '20rem' }" :pt="{
         content: { class: 'modalContent' } 
     }" v-on:hide="isEditing = false, car = {...carInitialValue}">

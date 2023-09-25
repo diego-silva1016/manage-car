@@ -3,7 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import axios from "axios"
-import { user, type User } from '@/context/user.ts';
+import { user, type User } from '@/context/user';
 
 function requireAuth(_to : any, _from : any, next : Function) {
   const userData = localStorage.getItem('user');

@@ -5,7 +5,7 @@ import axios from "axios"
 import Card from 'primevue/card';
 import Toast from 'primevue/toast';
 import ProgressSpinner from 'primevue/progressspinner';
-import { user } from '@/context/user.ts';
+import { user } from '@/context/user';
 
 import { useToast } from 'primevue/usetoast';
 
